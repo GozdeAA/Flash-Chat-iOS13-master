@@ -6,18 +6,25 @@
 //  Copyright © 2019 Angela Yu. All rights reserved.
 //
 
+import CLTypingLabel
 import UIKit
 
 class WelcomeViewController: UIViewController {
-    @IBOutlet var titleLabel: UILabel!
+    // @IBOutlet var titleLabel: UILabel!
+
+    @IBOutlet var titleLabel: CLTypingLabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        titleLabel.text = "⚡️FlashChat"
+    }
 
+    /// basic animation for title text
+    func animateTitle() {
         titleLabel.text = ""
         var charIndex = 0.0
         let title = "⚡️FlashChat"
-        for letter in title {    
+        for letter in title {
             /// Timer
             Timer.scheduledTimer(withTimeInterval: 0.5 * charIndex, repeats: false) { [self] _ in
                 titleLabel.text?.append(letter)
