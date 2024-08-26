@@ -37,7 +37,7 @@ class LoginViewController: UIViewController {
 
             if let res = authResult {
                 print(res.user.uid)
-                strongSelf.performSegue(withIdentifier: "LoginToChat", sender: self)
+                strongSelf.performSegue(withIdentifier: Constants.loginToChat , sender: self)
             } else {
                 print(authResult)
             }
