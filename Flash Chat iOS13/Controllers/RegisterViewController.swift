@@ -35,7 +35,7 @@ class RegisterViewController: UIViewController {
             if let res = authResult {
                 print("login successful")
                 print(res.user.uid)
-                self.performSegue(withIdentifier: Constants.registerToChat, sender: self) //need to add self to access "self" in clousure
+                self.performSegue(withIdentifier: K.registerSegue, sender: self) //need to add self to access "self" in clousure
                 //navigate next screen
             }
         }
