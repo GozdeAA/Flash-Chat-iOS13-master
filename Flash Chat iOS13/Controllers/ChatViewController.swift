@@ -16,9 +16,9 @@ class ChatViewController: UIViewController {
     @IBOutlet var messageTextfield: UITextField!
 
     let db = Firestore.firestore()
-    
+
     let firebaseAuth = Auth.auth()
-    let messages: [Message] = [
+    var messages: [Message] = [
         Message(sender: "oi", body: "Hello"),
         Message(sender: "oy", body: "hawagi"),
         Message(sender: "oi", body: "haxim"),
@@ -34,7 +34,6 @@ class ChatViewController: UIViewController {
     }
 
     @IBAction func sendPressed(_ sender: UIButton) {
-        
         if let messageBody = messageTextfield.text, let messageSender = Auth.auth().currentUser?.email {
             db.collection(K.FStore.collectionName).addDocument(data: [K.FStore.senderField: messageSender, K.FStore.bodyField: messageBody]) { error in
                 if let newError = error {
@@ -59,6 +58,34 @@ class ChatViewController: UIViewController {
             print("Error signing out: %@", signOutError)
         }
     }
+
+    func loadMessages() {
+        // continuously listens messages collection
+        db.collection(K.FStore.collectionName).order(by: K.FStore.dateField).addSnapshotListener { querySnapshot, error in
+            self.messages = [] // clear previous messages
+            if let e = error {
+                print("an error occurred while fetching messages from firebase \(e)")
+            } else {
+                if let querySnapshot = querySnapshot?.documents {
+                    for doc in querySnapshot {
+                        let data = doc.data() // get each data from collection
+                        if let messageSender = data[K.FStore.senderField] as? String, let messageBody = data[K.FStore.bodyField] as? String {
+                            let newMessage = Message(sender: messageSender, body: messageBody)
+                            self.messages.append(newMessage)
+
+                            DispatchQueue.main.async { // to reload ui with new data
+                                self.tableView.reloadData()
+                                // this one is necessary for getting indexpath of the list
+                                let indexPath = IndexPath(row: self.messages.count - 1, section: 0) // if there is more than 1 item with scrolls this indicates which section will have the indexpath
+                                // scroll to bottom on each new message
+                                self.tableView.scrollToRow(at: indexPath, at: .top, animated: false)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 extension ChatViewController: UITableViewDataSource {
@@ -69,10 +96,26 @@ extension ChatViewController: UITableViewDataSource {
 
     // identifies current cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let message = messages[indexPath.row]
         // to convert messagecell class
         let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as! MessageCell
-        cell.label?.text = messages[indexPath.row].sender
-        cell.avatar
+        cell.label.text = message.body
+
+        // This is a message from the current user.
+        if message.sender == Auth.auth().currentUser?.email {
+            cell.youAvatar.isHidden = true
+            cell.avatar.isHidden = false
+            cell.messageBubble.backgroundColor = UIColor(named: K.BrandColors.lightPurple)
+            cell.label.textColor = UIColor(named: K.BrandColors.purple)
+        }
+        // This is a message from another sender.
+        else {
+            cell.youAvatar.isHidden = false
+            cell.avatar.isHidden = true
+            cell.messageBubble.backgroundColor = UIColor(named: K.BrandColors.purple)
+            cell.label.textColor = UIColor(named: K.BrandColors.lightPurple)
+        }
+
         return cell
     }
 }

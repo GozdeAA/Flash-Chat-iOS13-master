@@ -19,6 +19,18 @@ class WelcomeViewController: UIViewController {
         titleLabel.text = K.appName
     }
 
+    // runs before viewdidload
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.isNavigationBarHidden = true
+    }
+
+    //runs after page is closed
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.isNavigationBarHidden = false
+    }
+
     /// basic animation for title text
     func animateTitle() {
         titleLabel.text = ""
